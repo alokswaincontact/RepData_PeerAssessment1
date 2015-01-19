@@ -23,7 +23,8 @@ The dataset is stored in a comma-separated-value (CSV) file and there are a tota
 
 We now read the data, assign the various columns in the data proper data-types and put it into a data.frame. 
 
-```{r loaddata, echo = TRUE}
+
+```r
 library(lattice)
 
 # This is the mode of the various columns in the data.frame to be created later.
@@ -40,8 +41,8 @@ activity  <- read.csv("./activity.csv", header = TRUE, colClasses = colClasses, 
 We now draw some inferences from the data and plot some graphs to help us visualize different aspects of it.
 
 ### Plot of the total number of steps taken each day  
-```{r plot1, echo = TRUE}
 
+```r
 # Split the data according to data column.
 s <- split(activity, activity$date)
 
@@ -59,12 +60,15 @@ barchart(date~steps, data = sum_df,
          main="Total number of 'Steps' taken each Day")
 ```
 
+![plot of chunk plot1](figure/plot1-1.png) 
+
 ### Calculate the mean (total number of steps) taken per day
 
   
 We first calculate the mean of all the steps taken across all intervals per day and plot a barplot of it.  
 
-```{r mean, echo = TRUE}
+
+```r
 # Mean of all the steps in each 5-minute interval for the day.
 mean_df <- data.frame(steps = sapply(s, function(x) mean(x$steps, na.rm = TRUE)))
 
@@ -73,16 +77,21 @@ mean_df <- data.frame(steps = sapply(s, function(x) mean(x$steps, na.rm = TRUE))
 # Plot of the mean number of steps walked for all the days.
 barplot(mean_df$steps, names.arg = rownames(mean_df), beside=TRUE, col="lightblue", cex.axis = 0.75, cex.names = 0.75, axis.lty = 1, xlab = "Date", ylab = "mean (total number of steps)")
 ```
+
+![plot of chunk mean](figure/mean-1.png) 
  
 ### Calculate the median (total number of steps) taken per day
   
 We next do the same but instead calculate the median of all the steps taken across all intervals per day and plot a barplot of it as well.
 
-```{r median, echo = TRUE}
+
+```r
 median_df <- data.frame(steps = sapply(s, function(x) median(x$steps, na.rm = TRUE)))
 
 barplot(median_df$steps, names.arg = rownames(median_df), beside=TRUE, col="pink", cex.axis = 0.75, cex.names = 0.75, axis.lty = 1, xlab = "Date", ylab = "median (total number of steps)")
 ```
+
+![plot of chunk median](figure/median-1.png) 
 
 Note how the median is very close to 0 but not the mean. That's so because the number of steps walked per 5-minute interval in each day is very assymetrical and non-normal.
  
@@ -91,8 +100,8 @@ Note how the median is very close to 0 but not the mean. That's so because the n
   
 We next make a time series plot (i.e. type = "l" ) of the 5-minute interval on (x-axis) and the average number of steps taken, averaged across all days on (y-axis).
 
-```{r tseries, echo = TRUE}
 
+```r
 # Split the data according to 5-minute interval column.
 s <- split(activity, activity$interval)
 
@@ -112,10 +121,11 @@ plot(mean_5min_df$steps,
 # We also add a vertical line that shows the the 5-minute interval that has,
 # the maximum number of steps.
 abline(v=which.max(mean_5min_df$steps), col = "red",  lwd=1.85)
-  
 ```
 
-The 5-minute interval `r which.max(mean_5min_df$steps)`, on average (across all the days in the dataset), contains the maximum number of steps which is `r round(max(mean_5min_df$steps))`.
+![plot of chunk tseries](figure/tseries-1.png) 
+
+The 5-minute interval 104, on average (across all the days in the dataset), contains the maximum number of steps which is 206.
 
 
 
@@ -124,16 +134,18 @@ The 5-minute interval `r which.max(mean_5min_df$steps)`, on average (across all 
 Note that there are a number of days/intervals where there are missing values (coded as NA ). The presence of missing days may introduce bias into some calculations or summaries of the data.
 
 
-```{r missingdata, echo = TRUE}
+
+```r
 tt <- complete.cases(activity)
 total_rows_with_NA <- sum(!tt)
 ```
 
-There are in all `r total_rows_with_NA` rows with missing data.
+There are in all 2304 rows with missing data.
 
 We fill the missing data with the mean for that 5minute interval.
   
-```{r filldata, echo = TRUE}
+
+```r
 table_with_missing_entries <- is.na(activity$steps)
 
 steps_filled <- ifelse (table_with_missing_entries, mean_5min_df$steps, activity$steps)
@@ -141,7 +153,8 @@ steps_filled <- ifelse (table_with_missing_entries, mean_5min_df$steps, activity
 
 We next create a new dataset that is equal to the original dataset but with the missing data filled in.
 
-```{r newdata, echo = TRUE}
+
+```r
 activity_new <- activity
 
 activity_new$steps = steps_filled
@@ -149,10 +162,14 @@ activity_new$steps = steps_filled
 
 We make a histogram of the total number of steps taken each day and calculate the mean and median total number of steps taken per day.
 
-```{r mean_median_data, echo = TRUE}
 
+```r
 hist(activity_new$steps)
+```
 
+![plot of chunk mean_median_data](figure/mean_median_data-1.png) 
+
+```r
 s <- split(activity_new, activity_new$date)
 
 mean_df_new <- data.frame(steps = sapply(s, function(x) mean(x$steps)))
@@ -165,8 +182,8 @@ median_df_new <- data.frame(steps = sapply(s, function(x) median(x$steps)))
 
 We create a new factor variable in the dataset with two levels "weekday" and "weekend" indicating whether a given date is a weekday or weekend day.
 
-```{r weekday_weekend, echo = TRUE}
-  
+
+```r
 # The list of weekdays
 weekday <- c("Monday", "Tuesday", "Wednesday", "Thursday", "Friday")
   
@@ -178,14 +195,13 @@ activity_new$day <- ifelse(weekdays(activity_new$date) %in% weekday, "weekday", 
 
 # Convert the 'day' column to a factor variable
 activity_new$day <- as.factor(activity_new$day)
-  
 ```
 
 We make a panel plot containing a time series plot (i.e. type = "l" ) of the 5-minute interval on (x-axis) and the average number of steps taken, averaged across all 'weekday' days or 'weekend' days (y-axis).
 
-```{r xyplot, echo = TRUE}
 
+```r
 xyplot(steps ~ interval | day, data = activity_new, layout = c(1, 2), type = "l", xlab = "Interval", ylab = "Number of steps")
- 
-
 ```
+
+![plot of chunk xyplot](figure/xyplot-1.png) 
